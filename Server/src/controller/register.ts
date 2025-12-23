@@ -1,0 +1,207 @@
+import { Request, Response } from "express";
+import { DB_model } from "../model/Register_Schema";
+import bcrypt from "bcrypt";
+import jwt from 'jsonwebtoken';
+import { Otp_Expiry, otp_generate } from "../utils/Otp_Gen";
+import { sendEmail } from "../utils/SendEmail";
+import crypto from 'crypto';
+
+export const handleRegister = async (req : Request, res : Response) : Promise<void> => {
+    try {
+        const {username, email, password} = req.body;
+
+        const Is_Found = await DB_model.findOne({Email : email});
+        if (Is_Found) {res.status(403).json("User Already Exists")};
+
+        const salt = 8;
+        const Hased_Password = await bcrypt.hash(password, salt);
+
+        await DB_model.create({
+            Username : username,
+            Email : email,
+            Password : Hased_Password,
+            Is2FA_Enable : false
+        });
+
+        res.status(201).json({Response : 'User Registerd Successfully!'});
+
+    } catch (error) {
+        res.status(500).json({'Erorr' : 'Error in Registration ' + error })
+    };
+};
+
+export const handleLogin = async (req : Request <{}, {}, { email: string; password: string }>, res : Response) : Promise<void> => {
+    try {
+        const {email, password} = req.body;
+
+        if (!email || !password) {
+            res.json('Please Provide all Credentials...');
+            return
+        };
+
+        const user = await DB_model.findOne({Email : email});
+        
+        if (!user) {
+            res.status(500).json({Message : "Account Not Found!"});
+            return;
+        };
+
+        console.log(user.Password);
+        
+        const isMatch = await bcrypt.compare(password, user.Password!);
+
+        if (!isMatch) {
+            res.status(401).json({ message: "Password is Invalid" });
+            return;
+        };
+
+        interface User_Payload {
+            user_id : string,
+            User_Name : string,
+            User_Email : string
+        }
+
+        const payload : User_Payload = {
+            user_id : user._id.toString(), 
+            User_Name : user.Username, 
+            User_Email : user.Email
+        };
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET as string);
+
+        res.cookie("cookies_Token", token);
+        // res.cookie("cookies_Token", token, {
+        //     httpOnly: true,      // JS can't access (XSS protection)
+        //     secure: false,       // true in production (HTTPS)
+        //     sameSite: "strict",  // CSRF protection
+        //     maxAge: 24 * 60 * 60 * 1000
+        // });
+        
+        res.status(200).redirect('/secure/dashboard');
+
+    } catch (error) {
+        res.status(500).json({'Error in Login' : error})
+    };  
+};
+
+export const handleDashboard = (req : Request, res : Response) => {
+    res.json({
+      massgae : 'Welcome to DashBoard '+(req as any).user.User_Name, 
+      user: (req as any).user
+    });
+};
+
+export const handleLogout = (req : Request, res : Response) => {
+    const token = req.cookies.cookies_Token;
+
+    if (!token) {
+        res.status(401).json({ message: "User is Unauthorized" });
+        return;
+    };
+
+    res.clearCookie("cookies_Token");
+    res.status(200).json({Message : 'User is Logout successfully'})
+};
+
+export const handleForgetPassword = async (req : Request, res : Response) : Promise<void>=> {
+    
+    const {email} = req.body;
+    
+    if (!email) {
+        res.status(401).json({message : "Please Enter Registered E-mail"});
+        return;
+    };
+
+    const users = await DB_model.findOne({Email : email});
+
+    if (!users) {
+        res.status(500).json({Message : "Account Not Found!"});
+        return;
+    };
+
+    const {otp, Hashed_Otp} = otp_generate();
+    const otpExpiryTime = Otp_Expiry();  
+
+    users.Hashed_Otp = Hashed_Otp;
+    users.Otp_Expiry = otpExpiryTime;
+    await users.save();
+
+    sendEmail(users.Email, otp);
+    res.status(200).json({Message : `OTP Sent to Your Email : ${email}`});
+};
+
+export const VerifyOtp = async (req : Request, res : Response) => {
+try {
+    const {email, otp} = req.body;
+    const Current_Time = Date.now().toString();
+
+    if (!otp) {
+        res.status(400).json({Message : "OTP is required!"});
+        return;
+    };
+
+    const users = await DB_model.findOne({Email : email});
+
+    if (!users) {
+        res.status(404).json({Message : "Account Not Found!"});
+        return;
+    };
+
+    if ( Current_Time > users.Otp_Expiry ) {
+        res.status(410).json({Expiry_Check : 'OTP is Expired' });
+        return;
+    };
+        
+    const Current_Hashed_Otp = 
+    crypto.createHash('sha256').update(String(otp)).digest('hex');
+
+    if (Current_Hashed_Otp !== users.Hashed_Otp) {
+        res.status(401).json({message : 'Enter the valid OTP which is Sent on your Email'});
+        return;
+    };
+
+    // Generate Reset Token and Hashing It, then Store in DB
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashed_resetToken = 
+    crypto.createHash('sha256').update(resetToken).digest('hex');
+    
+    users.Password_Reset_Token = hashed_resetToken;
+    users.Password_Reset_Expiry = (Date.now() + 5 * 60 * 1000).toString(); // 5 min
+    users.Hashed_Otp = '';
+    users.Otp_Expiry = '';
+    await users.save();
+         
+    res.status(200).json({response : {
+        message : 'OTP is successfully Verified!',
+        Reset_Token : resetToken
+    }});  
+
+} catch (error) {
+    res.status(500).json({'Erorr' : error});
+}};
+
+export const Set_NewPassword = async (req : Request, res : Response) => {
+    const { new_password, email } = req.body;
+
+    if ( !new_password ) {
+        return res.status(400).json('Password is Required!')
+    };
+  
+    const user = await DB_model.findOne({Email : email});
+    if (!user) {return res.status(404).json("account not found")};
+
+    const salt = 8;
+    const Hashed_New_Password = await bcrypt.hash(new_password, salt);
+
+    user.Password = Hashed_New_Password;
+    user.Password_Reset_Token = '' ;
+    user.Password_Reset_Expiry  = '' ;
+
+    await user.save();
+
+    res.status(200).json({Response : {
+        message : "New Password Set successfully",
+        Plain_New_Password : new_password,
+        Hashed_New_Password : Hashed_New_Password
+    }});
+};
