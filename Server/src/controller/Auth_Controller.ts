@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import jwt from 'jsonwebtoken';
 import { DB_model } from "../model/Register_Schema";
-// import passport from "passport";
 
 interface GoogleUser  {
     id : string,

@@ -7,8 +7,7 @@ import { OAuth_route } from "./routes/oauth_Route";   // OAuth Route
 import route from "./routes/routes";
 import cookieParser from "cookie-parser";
 import passport from "passport";
-import path from "path";
-// import session from "express-session";
+// import path from "path";
 
 const app = express();
 const PORT: string = process.env.PORT || '9000';
@@ -30,8 +29,8 @@ app.use(passport.initialize());
 // app.use(passport.session());
 
 //EJS
-app.set('view engine', 'ejs');
-app.set("views", path.join(__dirname, "views"));
+// app.set('view engine', 'ejs');
+// app.set("views", path.join(__dirname, "views"));
 // app.set("views", path.resolve('./views'))
 
 //Routing

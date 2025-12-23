@@ -5,10 +5,6 @@ import { ResetTokenCheck } from "../middleware/reset";
 
 const route = express.Router();
 
-route.get('/home' , (req, res) => {
-    res.json("Hello Google OAuth2.0")
-}); 
-
 route.post('/register', handleRegister);
 route.post('/login', handleLogin);
 route.get('/secure/dashboard', authCheck , handleDashboard);
