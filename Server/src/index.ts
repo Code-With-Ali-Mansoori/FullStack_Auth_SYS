@@ -7,6 +7,7 @@ import { OAuth_route } from "./routes/oauth_Route";   // OAuth Route
 import route from "./routes/routes";
 import cookieParser from "cookie-parser";
 import passport from "passport";
+import cors from 'cors';
 // import path from "path";
 
 const app = express();
@@ -25,6 +26,7 @@ DB_Connection(MONGO_URI);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(cors())
 app.use(passport.initialize());
 // app.use(passport.session());
 

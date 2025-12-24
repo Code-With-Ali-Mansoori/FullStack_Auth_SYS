@@ -1,6 +1,6 @@
 export default function LandingPage() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white text-black">
+    <div className="flex items-center justify-center min-h-screen bg-neutral-800 text-black">
       <div className="text-center bg-gray-100 px-10 py-16 rounded-lg shadow-md max-w-lg">
         <h1 className="text-4xl font-bold mb-6  ">Welcome to Fullstack Auth System</h1>
         <p className="text-gray-600 mb-8">

@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-interface registerDB extends Document {
+export interface registerDB extends Document {
     Username : string,
     Email : string, 
     Password? : string,

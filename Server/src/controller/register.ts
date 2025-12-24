@@ -1,18 +1,28 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { DB_model } from "../model/Register_Schema";
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import { Otp_Expiry, otp_generate } from "../utils/Otp_Gen";
 import { sendEmail } from "../utils/SendEmail";
 import crypto from 'crypto';
+// import { registerDB } from "../model/Register_Schema";
 
-export const handleRegister = async (req : Request, res : Response) : Promise<void> => {
+export const handleRegister = async (req : Request, res : Response) => {
     try {
         const {username, email, password} = req.body;
+        const DB_user = await DB_model.findOne({Email : email});
 
-        const Is_Found = await DB_model.findOne({Email : email});
-        if (Is_Found) {res.status(403).json("User Already Exists")};
+        if ( DB_user && email == DB_user.Email!) {
+            res.status(403).json({message : "User already Exist!"});         
+            return;
+        };
 
+        if ( DB_user && username == DB_user.Username!) {
+                
+            res.status(403).json({message : "Username already Exist!"});            
+            return;
+        }; 
+         
         const salt = 8;
         const Hased_Password = await bcrypt.hash(password, salt);
 
@@ -23,10 +33,15 @@ export const handleRegister = async (req : Request, res : Response) : Promise<vo
             Is2FA_Enable : false
         });
 
-        res.status(201).json({Response : 'User Registerd Successfully!'});
+        res.status(201).json({Response : {
+            message : "Account Registered Successfully!"
+            // data : {username, email}
+        }});
+        return;
 
     } catch (error) {
-        res.status(500).json({'Erorr' : 'Error in Registration ' + error })
+        res.status(403).json({Erorr : error});
+        return 
     };
 };
 
@@ -99,7 +114,7 @@ export const handleDashboard = async (req : Request, res : Response) => {
 };
 
 export const handleLogout = (req : Request, res : Response) => {
-    const token = req.cookies.cookies_Token;
+    const token = req.cookies?.cookies_Token;
 
     if (!token) {
         res.status(401).json({ message: "User is Unauthorized" });

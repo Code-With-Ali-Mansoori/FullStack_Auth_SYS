@@ -1,17 +1,41 @@
 import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 type FormValues = {
-  Username: string;
-  Email: string;
-  Password : string
+  username: string;
+  email: string;
+  password : string
 };
 
 export default function Register_Page() {
 
-  const {register, handleSubmit} = useForm<FormValues>();
+  const {register, handleSubmit, reset } = useForm<FormValues>();
+  const navigate = useNavigate();
 
-  const Register_Form_Hook = (data : FormValues) : void => {
-    console.log("Form Data:", data);
+  const SendRegister_Data = async ({username, email, password} : FormValues) => {
+    try {
+      const res = await axios.post('http://localhost:9000/register', {username, email, password});
+
+      console.log(res.data);
+      alert(`Account Registered! ✅`);
+      navigate('/login');
+
+    } catch (error) {
+      console.log(error);
+      alert(`Error : ${error?.response?.data?.message || 'Registration Failed!'} ❌`);
+    }
+  };    
+
+  const handle_Register = useMutation({
+    mutationFn : SendRegister_Data
+  });
+
+  // Handle Form
+  const Register_Form_Hook = ({username, email, password} : FormValues) : void => {
+    handle_Register.mutate({username, email, password});
+    reset();
   };
 
   return (
@@ -28,7 +52,7 @@ export default function Register_Page() {
               Username
             </label>
             <input
-            {...register('Username', { required: true })} 
+            {...register('username', { required: true })} 
               type="text"
               placeholder="Username"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
@@ -41,7 +65,7 @@ export default function Register_Page() {
             </label>
             <input
               type="email"
-              {...register('Email', { required: true })} 
+              {...register('email', { required: true })} 
               placeholder="xyz@example.com"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
             />
@@ -53,7 +77,7 @@ export default function Register_Page() {
             </label>
             <input
               type="password"
-              {...register('Password', { required: true })} 
+              {...register('password', { required: true })} 
               placeholder="Password"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
             />
