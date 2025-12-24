@@ -45,8 +45,6 @@ export const handleLogin = async (req : Request <{}, {}, { email: string; passwo
             res.status(500).json({Message : "Account Not Found!"});
             return;
         };
-
-        console.log(user.Password);
         
         const isMatch = await bcrypt.compare(password, user.Password!);
 
@@ -56,15 +54,15 @@ export const handleLogin = async (req : Request <{}, {}, { email: string; passwo
         };
 
         interface User_Payload {
-            user_id : string,
-            User_Name : string,
-            User_Email : string
+            id : string,
+            name : string,
+            email : string
         }
 
         const payload : User_Payload = {
-            user_id : user._id.toString(), 
-            User_Name : user.Username, 
-            User_Email : user.Email
+            id : user._id.toString(), 
+            name : user.Username, 
+            email : user.Email
         };
 
         const token = jwt.sign(payload, process.env.JWT_SECRET as string);
@@ -84,9 +82,18 @@ export const handleLogin = async (req : Request <{}, {}, { email: string; passwo
     };  
 };
 
-export const handleDashboard = (req : Request, res : Response) => {
+export const handleDashboard = async (req : Request, res : Response) => {
+
+    const email = (req as any).user.email;
+    const users = await DB_model.findOne({Email : email});
+
+    if (!users) {
+        res.json("Data not exhist");
+        return
+    };
+
     res.json({
-      massgae : 'Welcome to DashBoard '+(req as any).user.User_Name, 
+      massage : 'Welcome to DashBoard '+ users.Username, 
       user: (req as any).user
     });
 };

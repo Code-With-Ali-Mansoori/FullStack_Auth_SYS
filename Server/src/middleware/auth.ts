@@ -14,6 +14,9 @@ try {
     if (!secret) throw new Error("JWT_SECRET missing");
 
     const decoded = jwt.verify(token, secret) as JwtPayload;
+
+    console.log(decoded);
+
     (req as any).user = decoded;   // attach user info to request
 
     next();

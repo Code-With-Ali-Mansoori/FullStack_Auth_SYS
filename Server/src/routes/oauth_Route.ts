@@ -4,7 +4,7 @@ import { Google_OAuth_Controller } from "../controller/Auth_Controller";
 
 export const OAuth_route = express.Router();
 
-//Render Views/file.ejs
+// Render Views/file.ejs
 // OAuth_route.get('/check', (req, res) => {
 //   res.render('oAuth');
 // });
