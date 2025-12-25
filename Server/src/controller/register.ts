@@ -5,23 +5,19 @@ import jwt from 'jsonwebtoken';
 import { Otp_Expiry, otp_generate } from "../utils/Otp_Gen";
 import { sendEmail } from "../utils/SendEmail";
 import crypto from 'crypto';
-// import { registerDB } from "../model/Register_Schema";
 
 export const handleRegister = async (req : Request, res : Response) => {
     try {
         const {username, email, password} = req.body;
-        const DB_user = await DB_model.findOne({Email : email});
+        const existingUser = await DB_model.findOne({$or: [{ Email: email }, { Username: username }]});
+       
+        if (existingUser) {
+            if (existingUser.Email === email) {
+                return res.status(409).json({ message: "Email already exists" })};
 
-        if ( DB_user && email == DB_user.Email!) {
-            res.status(403).json({message : "User already Exist!"});         
-            return;
+            if (existingUser.Username === username) {
+                return res.status(409).json({ message: "Username already exists" })};   
         };
-
-        if ( DB_user && username == DB_user.Username!) {
-                
-            res.status(403).json({message : "Username already Exist!"});            
-            return;
-        }; 
          
         const salt = 8;
         const Hased_Password = await bcrypt.hash(password, salt);
@@ -35,15 +31,19 @@ export const handleRegister = async (req : Request, res : Response) => {
 
         res.status(201).json({Response : {
             message : "Account Registered Successfully!"
-            // data : {username, email}
         }});
+
         return;
 
-    } catch (error) {
-        res.status(403).json({Erorr : error});
-        return 
-    };
-};
+    } catch (error: any) {
+
+    if (error.code === 11000) {
+        const field = Object.keys(error.keyValue)[0];
+        return res.status(409).json({ message: `${field} already exists`});
+    }
+
+    res.status(500).json({ message: "Internal Server Error"});
+}};
 
 export const handleLogin = async (req : Request <{}, {}, { email: string; password: string }>, res : Response) : Promise<void> => {
     try {

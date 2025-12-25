@@ -16,15 +16,14 @@ export default function Register_Page() {
 
   const SendRegister_Data = async ({username, email, password} : FormValues) => {
     try {
-      const res = await axios.post('http://localhost:9000/register', {username, email, password});
-
-      console.log(res.data);
+      await axios.post('http://localhost:9000/register', {username, email, password});
       alert(`Account Registered! ✅`);
       navigate('/login');
+      return
 
     } catch (error) {
-      console.log(error);
       alert(`Error : ${error?.response?.data?.message || 'Registration Failed!'} ❌`);
+      return
     }
   };    
 
