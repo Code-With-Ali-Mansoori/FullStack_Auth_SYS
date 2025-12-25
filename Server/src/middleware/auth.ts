@@ -14,11 +14,13 @@ try {
     if (!secret) throw new Error("JWT_SECRET missing");
 
     const decoded = jwt.verify(token, secret) as JwtPayload;
-
-    console.log(decoded);
-
     (req as any).user = decoded;   // attach user info to request
 
+    // res.status(200).json({"authenticated": true});
     next();
-} catch { res.status(401).json({ message: "Invalid token" })};
+
+} catch (error) { 
+    res.status(401).json({ message : {authenticated : false , Err_msg: "Invalid token"} });
+    return;
+};
 };

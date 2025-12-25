@@ -45,26 +45,26 @@ export const handleRegister = async (req : Request, res : Response) => {
     res.status(500).json({ message: "Internal Server Error"});
 }};
 
-export const handleLogin = async (req : Request <{}, {}, { email: string; password: string }>, res : Response) : Promise<void> => {
+export const handleLogin = async (req : Request, res : Response) => {
     try {
         const {email, password} = req.body;
 
         if (!email || !password) {
-            res.json('Please Provide all Credentials...');
+            res.status(404).json('Please Provide all Credentials...');
             return
         };
 
         const user = await DB_model.findOne({Email : email});
         
         if (!user) {
-            res.status(500).json({Message : "Account Not Found!"});
+            res.status(404).json({message : "Account Not Found!"});
             return;
         };
         
         const isMatch = await bcrypt.compare(password, user.Password!);
 
         if (!isMatch) {
-            res.status(401).json({ message: "Password is Invalid" });
+            res.status(404).json({ message: "Password is Invalid" });
             return;
         };
 
@@ -82,35 +82,51 @@ export const handleLogin = async (req : Request <{}, {}, { email: string; passwo
 
         const token = jwt.sign(payload, process.env.JWT_SECRET as string);
 
-        res.cookie("cookies_Token", token);
-        // res.cookie("cookies_Token", token, {
-        //     httpOnly: true,      // JS can't access (XSS protection)
-        //     secure: false,       // true in production (HTTPS)
-        //     sameSite: "strict",  // CSRF protection
-        //     maxAge: 24 * 60 * 60 * 1000
-        // });
-        
-        res.status(200).redirect('/secure/dashboard');
+        res.cookie("cookies_Token", token, {
+            httpOnly: true,      // JS can't access (XSS protection)
+            secure: false,       // true in production (HTTPS)
+            sameSite: "strict",  // CSRF protection
+        });
+
+        res.status(200).json({ response : 
+            { message1 : 'User Login Succesfully', 
+            message2 : 'Cookie Also Set to Browser'}
+        });
+
+        return;
 
     } catch (error) {
-        res.status(500).json({'Error in Login' : error})
+        res.status(500).json({message : error});
+        return;
     };  
 };
 
 export const handleDashboard = async (req : Request, res : Response) => {
+    try {
 
     const email = (req as any).user.email;
     const users = await DB_model.findOne({Email : email});
 
     if (!users) {
-        res.json("Data not exhist");
+        res.status(404).json({message : "Data not found"});
         return
     };
 
-    res.json({
-      massage : 'Welcome to DashBoard '+ users.Username, 
-      user: (req as any).user
+    res.status(200).json({
+      response : {
+        UserName : users.Username, 
+        Email : users.Email,
+        Provider : users.Provider
+      }
     });
+
+    return;
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message : 'Server Error', 'Err_Msg' : error});
+        return;
+    };
 };
 
 export const handleLogout = (req : Request, res : Response) => {

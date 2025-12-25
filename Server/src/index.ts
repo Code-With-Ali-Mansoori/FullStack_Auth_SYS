@@ -23,11 +23,16 @@ DB_Connection(MONGO_URI);
 // }));
 
 //Middleware
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors())
 app.use(passport.initialize());
+app.use(cors({
+  origin: "http://localhost:5173", // your frontend URL
+  credentials: true                // 🔑 allow cookies
+}));
+
 // app.use(passport.session());
 
 //EJS
@@ -36,6 +41,7 @@ app.use(passport.initialize());
 // app.set("views", path.resolve('./views'))
 
 //Routing
+
 app.use('/', route);
 app.use('/oauthorize', OAuth_route);
 

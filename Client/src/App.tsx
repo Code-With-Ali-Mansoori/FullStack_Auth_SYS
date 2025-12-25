@@ -6,11 +6,12 @@ import Register_Page from "./components/Register";
 import Reset_Password from "./components/Reset_Password";
 import WelcomePage from "./components/Welcome";
 import LandingPage from "./components/Landing";
+import ProtectedRoute from "./utils/ProtectedRoute";
 
 const App = () => {
   return (
     <div>
-
+      
       <Routes>
         <Route path="/" element={<LandingPage/>} />
         <Route path="/landing-page" element={<LandingPage/>} />
@@ -19,7 +20,11 @@ const App = () => {
         <Route path="/forgot/password" element={<Forgot_Password/>} />
         <Route path="/otp/verify/user" element={<OTP_Verification/>} />
         <Route path="/reset/password" element={<Reset_Password/>} />
-        <Route path="/welcome" element={<WelcomePage/>} />
+    
+        {/* Protected Route */}
+        <Route element={<ProtectedRoute />}>    
+          <Route path="/welcome" element={<WelcomePage />} />
+        </Route>
       </Routes>
 
     </div>

@@ -16,19 +16,22 @@ export default function Register_Page() {
 
   const SendRegister_Data = async ({username, email, password} : FormValues) => {
     try {
-      await axios.post('http://localhost:9000/register', {username, email, password});
-      alert(`Account Registered! ✅`);
-      navigate('/login');
-      return
+      const res = await axios.post('http://localhost:9000/register', {username, email, password}, { withCredentials: true });
+      
+      if (res.status == 201) {
+          alert('Account Registered! ✅'); 
+          navigate('/login')
+      };
 
     } catch (error) {
-      alert(`Error : ${error?.response?.data?.message || 'Registration Failed!'} ❌`);
+      alert(`${error?.response?.data?.message || 'Registration Failed!'} ❌`);
       return
     }
   };    
 
   const handle_Register = useMutation({
-    mutationFn : SendRegister_Data
+    mutationFn : SendRegister_Data,
+    onError : () => {navigate('/register')}
   });
 
   // Handle Form

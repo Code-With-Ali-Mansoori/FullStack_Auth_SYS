@@ -1,4 +1,44 @@
+import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+type LoginValues = {
+  email : string,
+  password : string
+}
+
 export default function LogIn_Page() {
+
+  const {register, handleSubmit, reset } = useForm<LoginValues>();
+  const navigate = useNavigate();
+
+  const Send_LoginData = async ({email, password} : LoginValues) => {
+    try {
+      const res = await axios.post("http://localhost:9000/login", {email, password}, { withCredentials: true });
+            
+      if ( res.status == 200 ) {
+        navigate('/welcome');
+      };
+
+      return 
+
+    } catch (error) {      
+      alert(`${error!.response?.data?.message } ❌`);
+      navigate('/login')
+      return  
+    }
+  };
+
+  const LoginMutate = useMutation({
+    mutationFn : Send_LoginData,
+  });
+
+  const handleLoginForm = ({email, password} : LoginValues) => {
+    LoginMutate.mutate({email, password});
+    reset();
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-sm p-8 bg-gray-100 rounded-lg shadow-lg">
@@ -7,7 +47,7 @@ export default function LogIn_Page() {
           Enter your email below to login to your account
         </p>
 
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit(handleLoginForm)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -15,6 +55,7 @@ export default function LogIn_Page() {
             <input
               type="email"
               placeholder="xyz@example.com"
+              {...register('email', { required: true })} 
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>
@@ -35,6 +76,7 @@ export default function LogIn_Page() {
             </div>
             <input
               type="password"
+              {...register('password', { required: true })} 
               placeholder="Password"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
             />
