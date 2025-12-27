@@ -98,7 +98,7 @@ export default function Register_Page() {
           <hr className="grow border-gray-300" />
         </div>
 
-        <a href="http://localhost:9000/oauthorize/auth/google" className="w-full mt-4 flex items-center justify-center space-x-2 border border-gray-400 rounded-md py-2  text-gray-700 hover:bg-gray-200 transition-colors">
+        <a href='http://localhost:9000/oauthorize/auth/google'  className="w-full mt-4 flex items-center justify-center space-x-2 border border-gray-400 rounded-md py-2  text-gray-700 hover:bg-gray-200 transition-colors">
           <svg
             className="w-5 h-5"
             xmlns="http://www.w3.org/2000/svg"

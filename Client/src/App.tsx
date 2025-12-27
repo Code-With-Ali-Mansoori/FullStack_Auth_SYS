@@ -7,8 +7,16 @@ import Reset_Password from "./components/Reset_Password";
 import WelcomePage from "./components/Welcome";
 import LandingPage from "./components/Landing";
 import ProtectedRoute from "./utils/ProtectedRoute";
+import Warning from "./utils/Warninng";
+import { useState } from "react";
+import Protect_Otp_Verify_Route from "./utils/Protect_Otp_Verify";
+import Protect_Reset_Password_Route from "./utils/Protect_Reset_Password";
 
 const App = () => {
+
+  const [ResetEmail, setresetEmail] = useState<string>(''); // Passing email to Other Components
+  const [Reset_Token, setResetToken] = useState<string>('');
+
   return (
     <div>
       
@@ -17,16 +25,35 @@ const App = () => {
         <Route path="/landing-page" element={<LandingPage/>} />
         <Route path="/register" element={<Register_Page/>} />
         <Route path="/login" element={<LogIn_Page/>} />
-        <Route path="/forgot/password" element={<Forgot_Password/>} />
-        <Route path="/otp/verify/user" element={<OTP_Verification/>} />
-        <Route path="/reset/password" element={<Reset_Password/>} />
-    
-        {/* Protected Route */}
+        <Route path="/forgot/password" element={<Forgot_Password setresetEmail={setresetEmail}/>} />
+        <Route path="/oauth/google/failed/warning" element={<Warning/>} />
+
+        {/* Protected OTP Route */}
+        <Route element={<Protect_Otp_Verify_Route ResetEmail={ResetEmail}/>}>
+          <Route path="/otp/verify/user" 
+            element={<OTP_Verification 
+              ResetEmail={ResetEmail}  
+              setResetToken={setResetToken} /> 
+            }/>   
+        </Route>
+
+        {/* Protected Reset Password Route */}
+        <Route 
+        element={<Protect_Reset_Password_Route ResetEmail={ResetEmail} Reset_Token={Reset_Token}/>} >
+          <Route path="/reset/password" 
+            element={<Reset_Password 
+              ResetEmail={ResetEmail} 
+              Reset_Token={Reset_Token} 
+            />}
+          />
+        </Route>
+
+        {/* Protected Welcome Route */}
         <Route element={<ProtectedRoute />}>    
           <Route path="/welcome" element={<WelcomePage />} />
         </Route>
+      
       </Routes>
-
     </div>
   )
 }

@@ -10,6 +10,8 @@ interface GoogleUser  {
  
 export const Google_OAuth_Controller = async (req : Request, res : Response) => {
   
+    try {
+        
     if (!req.user) {
       return res.status(401).json({ response : "OAuth failed" });
     };
@@ -44,6 +46,7 @@ export const Google_OAuth_Controller = async (req : Request, res : Response) => 
         sameSite: "strict",  // CSRF protection
     });
 
+    res.redirect('http://localhost:5173/welcome');  //Redirect to Frontend
     res.status(201).json({response : {
         message : 'User Authenticated by Google OAuth',
         user : {
@@ -55,7 +58,10 @@ export const Google_OAuth_Controller = async (req : Request, res : Response) => 
             }]
         }
     } });
-    // res.status(200).redirect('/secure/dashboard');
+
+    } catch (error) {
+        res.status(400).redirect('http://localhost:5173/oauth/google/failed/warning');
+    } 
 };
 
 //Storing Data in Session and Retriving from Session 

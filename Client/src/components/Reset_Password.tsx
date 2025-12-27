@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 
-export default function Reset_Password() {
+type Typing_Reset_Passwords = {
+  ResetEmail : string;
+  Reset_Token : string
+}
+
+export default function Reset_Password({ResetEmail, Reset_Token} : Typing_Reset_Passwords) {
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-sm p-8 bg-gray-100 rounded-lg shadow-lg">

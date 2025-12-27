@@ -142,18 +142,19 @@ export const handleLogout = (req : Request, res : Response) => {
 };
 
 export const handleForgetPassword = async (req : Request, res : Response) : Promise<void>=> {
-    
+    try {
+        
     const {email} = req.body;
     
     if (!email) {
-        res.status(401).json({message : "Please Enter Registered E-mail"});
+        res.status(400).json({message : "Email Required"});
         return;
     };
 
     const users = await DB_model.findOne({Email : email});
 
     if (!users) {
-        res.status(500).json({Message : "Account Not Found!"});
+        res.status(404).json({message : "Account Not Found!"});
         return;
     };
 
@@ -165,38 +166,44 @@ export const handleForgetPassword = async (req : Request, res : Response) : Prom
     await users.save();
 
     sendEmail(users.Email, otp);
-    res.status(200).json({Message : `OTP Sent to Your Email : ${email}`});
+    res.status(200).json({message : `OTP Sent to Your Email`});
+    return
+
+    } catch (error) {
+        res.status(400).json({message : error})    
+        return;
+    }
 };
 
 export const VerifyOtp = async (req : Request, res : Response) => {
 try {
-    const {email, otp} = req.body;
+    const {ResetEmail, OTP} = req.body;
     const Current_Time = Date.now().toString();
 
-    if (!otp) {
-        res.status(400).json({Message : "OTP is required!"});
+    if (!OTP) {
+        res.status(404).json({message : "OTP is required!"});
         return;
     };
 
-    const users = await DB_model.findOne({Email : email});
+    const users = await DB_model.findOne({Email : ResetEmail});
 
     if (!users) {
-        res.status(404).json({Message : "Account Not Found!"});
+        res.status(404).json({message : "Account Not Found!"});
         return;
     };
 
     if ( Current_Time > users.Otp_Expiry ) {
-        res.status(410).json({Expiry_Check : 'OTP is Expired' });
+        res.status(410).json({message : 'OTP is Expired - Re-enter the E-mail' });
         return;
     };
         
     const Current_Hashed_Otp = 
-    crypto.createHash('sha256').update(String(otp)).digest('hex');
+    crypto.createHash('sha256').update(String(OTP)).digest('hex');
 
     if (Current_Hashed_Otp !== users.Hashed_Otp) {
         res.status(401).json({message : 'Enter the valid OTP which is Sent on your Email'});
         return;
-    };
+    };  
 
     // Generate Reset Token and Hashing It, then Store in DB
     const resetToken = crypto.randomBytes(32).toString("hex");
@@ -210,12 +217,12 @@ try {
     await users.save();
          
     res.status(200).json({response : {
-        message : 'OTP is successfully Verified!',
+        message : 'OTP successfully Verified!',
         Reset_Token : resetToken
     }});  
 
 } catch (error) {
-    res.status(500).json({'Erorr' : error});
+     res.status(500).json({message : error});
 }};
 
 export const Set_NewPassword = async (req : Request, res : Response) => {
