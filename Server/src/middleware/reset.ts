@@ -22,15 +22,15 @@ try {
     const users = await DB_model.findOne({Email : email});
 
     if (!users) {
-        res.status(404).json({Message : "Account Not Found!"});
+        res.status(404).json({message : "Account Not Found!"});
         return;
 
     } else if ( Current_Time > users.Password_Reset_Expiry ) {
-        res.status(410).json({Expiry_Check : 'Reset Token is Expired' });
+        res.status(410).json({message : 'Reset Token is Expired' });
         return;
 
     } else if ( users.Password_Reset_Token !== hashed_resetToken ) {
-        res.status(401).json({response : {message : 'Token is not Valid'}});
+        res.status(401).json({message : 'Token is not Valid'});
         return;
 
     } else {
@@ -38,6 +38,6 @@ try {
     };
 
 } catch (error) {
-    res.json({Response : error})
+    res.status(500).json({message : error})
 };
 };  

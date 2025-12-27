@@ -226,14 +226,15 @@ try {
 }};
 
 export const Set_NewPassword = async (req : Request, res : Response) => {
+    try {
     const { new_password, email } = req.body;
 
     if ( !new_password ) {
-        return res.status(400).json('Password is Required!')
+        return res.status(400).json({message : 'Password is Required!'})
     };
   
     const user = await DB_model.findOne({Email : email});
-    if (!user) {return res.status(404).json("account not found")};
+    if (!user) {return res.status(404).json({message : "account not found"})};
 
     const salt = 8;
     const Hashed_New_Password = await bcrypt.hash(new_password, salt);
@@ -244,9 +245,13 @@ export const Set_NewPassword = async (req : Request, res : Response) => {
 
     await user.save();
 
-    res.status(200).json({Response : {
+    return res.status(200).json({message : {
         message : "New Password Set successfully",
         Plain_New_Password : new_password,
         Hashed_New_Password : Hashed_New_Password
     }});
+
+    } catch (error) {
+        return res.status(500).json({message : error});
+    }
 };

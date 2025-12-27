@@ -129,7 +129,7 @@ export default function OTP_Verification({ResetEmail, setResetToken} : ForgotPas
 
           <div className="mb-5">
             <small className={`text-red-600 font-medium ${ isErorr ? "block" : "hidden"}`}>
-                {Err_Msg}
+            {Err_Msg}
             </small>
           </div>
 
