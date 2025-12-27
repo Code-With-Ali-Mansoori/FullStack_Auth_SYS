@@ -84,8 +84,8 @@ export const handleLogin = async (req : Request, res : Response) => {
 
         res.cookie("cookies_Token", token, {
             httpOnly: true,      // JS can't access (XSS protection)
-            secure: false,       // true in production (HTTPS)
-            sameSite: "strict",  // CSRF protection
+            secure: true,       // true in production (HTTPS)
+            sameSite: "none",  // CSRF protection
         });
 
         res.status(200).json({ response : 
