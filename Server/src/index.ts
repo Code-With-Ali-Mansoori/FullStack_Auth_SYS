@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import { DB_Connection } from "./model/DB_Conn";
-import "../src/controller/oAuth";  // OAuth
+// import "../src/controller/oAuth";   OAuth
 import { OAuth_route } from "./routes/oauth_Route";   // OAuth Route
 import route from "./routes/routes";
 import cookieParser from "cookie-parser";
