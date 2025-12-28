@@ -13,6 +13,5 @@ export const DB_Connection = async (MONGO_URI : string):Promise<void>  => {
     } catch (error) {
         console.log("MongoDB connection Failed ⚠️ ", error);
 
-    }
+    };
 };
-

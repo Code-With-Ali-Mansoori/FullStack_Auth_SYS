@@ -46,21 +46,23 @@ export const Google_OAuth_Controller = async (req : Request, res : Response) => 
         sameSite: "none",  // CSRF protection
     });
 
-    res.redirect('http://localhost:5173/welcome');  //Redirect to Frontend
-    res.status(201).json({response : {
-        message : 'User Authenticated by Google OAuth',
-        user : {
-            data : [{   
-                user : DB_Users!.Username,
-                email : DB_Users!.Email,
-                Auth_Provider : DB_Users!.Provider,
-                Provider_Id : DB_Users!.ProviderId,
-            }]
-        }
-    } });
+    res.redirect(`${process.env.CLIENT_URL}/welcome`);  //Redirect to Frontend
+    return;
+    // res.status(201).json({response : {
+    //     message : 'User Authenticated by Google OAuth',
+    //     user : {
+    //         data : [{   
+    //             user : DB_Users!.Username,
+    //             email : DB_Users!.Email,
+    //             Auth_Provider : DB_Users!.Provider,
+    //             Provider_Id : DB_Users!.ProviderId,
+    //         }]
+    //     }
+    // } });
 
-    } catch (error) {
-        res.status(400).redirect('http://localhost:5173/oauth/google/failed/warning');
+    } catch {
+        res.status(500).redirect('http://localhost:5173/oauth/google/failed/warning');
+        return;
     } 
 };
 
